@@ -33,6 +33,10 @@ PHP filesystem interfaces e.g. Streams (check this).
 
 Not enough type-hints. Needs more as objects are passed around all over the place.
 
+Not sure if can be made to support all the standard PHP protocols (http://www.php.net/manual/en/wrappers.php)
+but maybe a "php" storage engine can do this, or maybe it would need a wrapper around the whole thing to
+set up the storage engines on-the-fly and cache them?
+
 Alternatives
 ------------
 
@@ -44,6 +48,9 @@ Architecture
 Pattern adapter/driver (TBC)
 
 The interfaces it implements.
+
+Can a connection span page requests efficiently, e.g. by keeping connections live through
+memcached, if that is even possible?
 
 General use
 -----------
