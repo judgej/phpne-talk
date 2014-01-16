@@ -83,3 +83,23 @@ Storage that would be interesting
 * PDO/MySQL
 * BBC iPlayer
 
+Reference Tables
+================
+
+Standard PHP resource protocols
+-------------------------------
+
+| Prefix | Description |
+| ------ | ----------- |
+| file:// | Accessing local filesystem |
+| http:// | Accessing HTTP(s) URLs |
+| ftp:// | Accessing FTP(s) URLs |
+| php:// | Accessing various I/O streams |
+| zlib:// | Compression Streams |
+| data:// | Data (RFC 2397) |
+| glob:// | Find pathnames matching pattern |
+| mphar:// | PHP Archive |
+| ssh2:// | Secure Shell 2 |
+| rar:// | RAR |
+| ogg:// | Audio streams |
+| expect:// | Process Interaction Streams |
