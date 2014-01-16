@@ -86,6 +86,8 @@ Storage that would be interesting
 Reference Tables
 ================
 
+It would be great if all these could be supported right out of the box.
+
 Standard PHP resource protocols
 -------------------------------
 
@@ -106,6 +108,10 @@ Standard PHP resource protocols
 
 PHP Filesystem functions
 ------------------------
+
+Nice to see equivalents to all these functions. Also documenting how the syntax varies
+between these functions and the equivalent flysystem methods, to make migration plans
+easier to implement.
 
 | Function | Description |
 | -------- | ----------- |
