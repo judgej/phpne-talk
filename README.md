@@ -45,7 +45,9 @@ Out of the box. (TBC)
 How easy is it to put into an existing product? Any case studies?
 
 The "mount manager" allowing one "virtual filesystem" to be constructed from many different
-storage engines.
+(or the same?) storage engines.
+
+Pathnames for files - the syntax details.
 
 Expansion
 ---------
