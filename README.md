@@ -40,7 +40,11 @@ set up the storage engines on-the-fly and cache them?
 Alternatives
 ------------
 
-TBC
+Resources can be wrapped around resources, with the many functions they need being hidden
+behind magic methods (__call(), __toString(), __get() etc).
+
+* [php-resource](https://code.google.com/p/php-resource/) offers a comprehensive OPP wrapper for resources.
+* [shesek](http://www.shesek.info/php/generic-php-object-wrapper-for-resources) offers a simpler OOP wrapper for resources.
 
 Architecture
 ------------
