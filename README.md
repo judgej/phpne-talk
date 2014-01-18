@@ -91,12 +91,15 @@ It would be great if all these could be supported right out of the box.
 Standard PHP resource protocols
 -------------------------------
 
-| Prefix | Description |
-| ------ | ----------- |
+Note that streams are not filesystems, but a way to access data, some of which
+may be in filesystems.
+
+| Prefix (wrapper) | Description |
+| ---------------- | ----------- |
 | file:// | Accessing local filesystem |
 | http:// | Accessing HTTP(s) URLs |
 | ftp:// | Accessing FTP(s) URLs |
-| php:// | Accessing various I/O streams |
+| php:// | Accessing various I/O streams (stdin, stdout and stderr, plus many more) |
 | zlib:// | Compression Streams |
 | data:// | Data (RFC 2397) |
 | glob:// | Find pathnames matching pattern |
