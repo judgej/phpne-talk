@@ -80,6 +80,8 @@ Expansion
 
 * Adding new drivers/storage
 * Interoperability; how does it fit with libraries already out there?
+* Library wrapper for frameworks, e.g. a DiC wrapper package for Laravel so it is quick to use out of the box.
+  No "siloing" though - just an adapter.
 
 Storage that would be interesting
 ---------------------------------
