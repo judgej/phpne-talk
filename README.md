@@ -31,7 +31,7 @@ What flysystem isn't
 Seems to implement self-contained interfaces only (e.g. no iterator for streams or standard
 PHP filesystem interfaces e.g. Streams (check this).
 
-Not enough type-hints. Needs more as objects are passed around all over the place.
+Not enough type-hints. Needs more, as objects are passed around all over the place (improvements section?).
 
 Not sure if can be made to support all the standard PHP protocols (http://www.php.net/manual/en/wrappers.php)
 but maybe a "php" storage engine can do this, or maybe it would need a wrapper around the whole thing to
