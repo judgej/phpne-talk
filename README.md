@@ -77,7 +77,8 @@ Incorporation into a DiC.
 Expansion
 ---------
 
-Adding new drivers/storage
+* Adding new drivers/storage
+* Interoperability; how does it fit with libraries already out there?
 
 Storage that would be interesting
 ---------------------------------
@@ -86,6 +87,7 @@ Storage that would be interesting
 * IMAP
 * PDO/MySQL
 * BBC iPlayer
+* Google App Engine (uploaded files, cache files)
 
 Reference Tables
 ================
