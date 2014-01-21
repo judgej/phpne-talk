@@ -46,6 +46,7 @@ behind magic methods (__call(), __toString(), __get() etc).
 
 * [php-resource](https://code.google.com/p/php-resource/) offers a comprehensive OPP wrapper for resources.
 * [shesek](http://www.shesek.info/php/generic-php-object-wrapper-for-resources) offers a simpler OOP wrapper for resources.
+* [Illuminate\Filesystem\Filesystem](http://laravel.com/api/source-class-Illuminate.Filesystem.Filesystem.html#Filesystem) used by Laravel. Not driver-based, so it *only* supports local filesystem operations.
 
 Architecture
 ------------
