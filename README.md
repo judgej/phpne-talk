@@ -51,7 +51,8 @@ behind magic methods (__call(), __toString(), __get() etc).
 Architecture
 ------------
 
-Pattern adapter/driver (TBC)
+Uses the [adapter](http://www.fluffycat.com/PHP-Design-Patterns/Adapter/) pattern so that many backend
+storage engines can be pulled in and accessed through a common adapter interface.
 
 The interfaces it implements.
 
