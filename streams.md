@@ -33,7 +33,7 @@ Wrappers can use filters. A filter processes the stream (for reading or writing)
 
 Examples (TODO)
 
-Just as for wrappers, a custom filter can be created, registered and used by a stream.
+Just as for wrappers, a custom filter can be created, registered and used by a stream. The most common types of filters handle compression, conversion, encryption or perform string operations.
 
 Contexts
 --------
