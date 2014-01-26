@@ -16,7 +16,7 @@ A stream does not have its entire content stored in memory. This allows very lar
 Wrappers
 --------
 
-Each stream is handled by a "wrapper". Streams are not objects, but they were, a wrapper wopuld be an extension to the basic stream object.
+Each stream is handled by a "wrapper". Streams are not objects, but they were, a wrapper wopuld be an extension to the basic stream object. The wrapper handles the protocol, such as knowing how to open a local file, or opening sockets to an FTP or web server and logging in if required.
 
 Every stream is handled by a wrapper. If you do not specify the wrapper, then the local filesystem is selected by default. This is the "file://" wrapper.
 
@@ -34,5 +34,9 @@ Examples (TODO)
 Contexts
 --------
 
-This is another name for "options". You can set options globally for a wrapper, or pass specific options into some stream creation functions.
+This is another name for "options". You can set options globally for a wrapper, or pass specific options into some stream creation functions. The options available are specific to the wrapper, but they can be used to tweak the protocol, for example, such as making a `http://` stream use POST or inserting authentication tokens into its header.
 
+Custom Wrappers
+---------------
+
+You are not stuck with the wrappers that PHP provides; you can register your own custom wrappers. A wrapper could, for example, log into Dropbox (with an authentication token passed in as a context option) and handle a file there as a stream. Whether Dropbox really supports streaming, or it is emulated by local cacheing appending to a file, does not matter; it should still look like a stream to the local application.
