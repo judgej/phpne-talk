@@ -20,5 +20,19 @@ Each stream is handled by a "wrapper". Streams are not objects, but they were, a
 
 Every stream is handled by a wrapper. If you do not specify the wrapper, then the local filesystem is selected by default. This is the "file://" wrapper.
 
+The locator for a stream is specified as `scheme://target`. The scheme is the name of the wrapper, and the target is a locator that is specific to the wrapper. It may be just a pathname, or a domain, or may include authentication details (e.g. for ftp://).
 
+Examples (TODO)
+
+Filters
+-------
+
+Wrappers can use filters. A filter processes the stream (for reading or writing) and can do such things as compressing or decompressing, changing charactersets, or anything more complex. The filters are tagged onto the front of a stream locator using the meta wrapper `php://filter`.
+
+Examples (TODO)
+
+Contexts
+--------
+
+This is another name for "options". You can set options globally for a wrapper, or pass specific options into some stream creation functions.
 
