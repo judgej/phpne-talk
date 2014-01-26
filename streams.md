@@ -11,7 +11,9 @@ A stream is a resource that has a streamable behaviour. The mean features of thi
 
 For example, a stream may give you the data for a file. It may come from a file with a name in a directory, but that location is not a direct property of the stream, it is just how it is located. A file is not a stream; but a file can be read and written using a stream.
 
-A stream does not have its entire content stored in memory. This allows very large files to be handled - written and read.
+Streams are acessed through their locator - e.g. a pathname or URI - but do not expose the structure that the resources are organised into. That structure is essentially the filesystem.
+
+A stream does not [need to] have its entire content stored in memory. This allows very large files to be handled, i.e. written and read.
 
 Wrappers
 --------
