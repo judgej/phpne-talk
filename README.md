@@ -219,3 +219,10 @@ Each function operates on one of the following as its file:
 * resource - a file resource
 
 There is a real good mix of pathnames and resources.
+
+A pathname can be a local path to a file, or could make use of a wrapper. Each wrapper is invoked
+by adding to the path with the scheme:// prefix. Schemss can include 'file', 'ftp', 'php', 'phar',
+and many others. Also custom wrappers can be registered for custom streams. These wrappers can 
+both read and write.
+
+Q: can wrappers be mixed, e.g. rename('ftp://user:pass@example.com/foo.txt', 'zip://archive.zip#bar.txt')?
