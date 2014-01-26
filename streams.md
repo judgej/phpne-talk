@@ -33,6 +33,8 @@ Wrappers can use filters. A filter processes the stream (for reading or writing)
 
 Examples (TODO)
 
+Just as for wrappers, a custom filter can be created, registered and used by a stream.
+
 Contexts
 --------
 
