@@ -15,6 +15,8 @@ Streams are acessed through their locator - e.g. a pathname or URI - but do not 
 
 A stream does not [need to] have its entire content stored in memory. This allows very large files to be handled, i.e. written and read.
 
+There are 47 stream_*() functions (see http://www.php.net/manual/en/ref.stream.php) in PHP for creating, using and deleting streams. Many of the functions have no user comments, which usually indicates they are not well used. They are very powerful though, allowing much functionality to be hidden away behind some simple streams.
+
 Wrappers
 --------
 
@@ -30,6 +32,10 @@ Filters
 -------
 
 Wrappers can use filters. A filter processes the stream (for reading or writing) and can do such things as compressing or decompressing, changing charactersets, or anything more complex. The filters are tagged onto the front of a stream locator using the meta wrapper `php://filter`.
+
+Examples (TODO)
+
+Alternatively filters can be added to a stream after the stream is opened using stream_filter_append() or stream_filter_prepend(). This is probably easier than trying to squeeze it into the intial stream locator when creating the stream.
 
 Examples (TODO)
 
