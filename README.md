@@ -96,6 +96,7 @@ Storage that would be interesting
 * PDO/MySQL
 * BBC iPlayer
 * Google App Engine (uploaded files, cache files)
+* A test adapter that supports arbitrary data structures and assertions
 
 Reference Tables
 ================
