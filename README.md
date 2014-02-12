@@ -49,6 +49,7 @@ behind magic methods (__call(), __toString(), __get() etc).
 * [Illuminate\Filesystem\Filesystem](http://laravel.com/api/source-class-Illuminate.Filesystem.Filesystem.html#Filesystem) used by Laravel. Not driver-based, so it *only* supports local filesystem operations. However, it is simple to swap it out through its facade, though that is essentially setting a single, global filestore for the whole application.
 * [KnpLabs/Gaufrette](https://github.com/KnpLabs/Gaufrette) takes a similar approach, and has been around for a couple of years.
 * [discordier/php-filesystem](https://github.com/discordier/php-filesystem) tries to get to some raw file access methods, though seems to have stopped development before many adapters were written. Implements filesystem iterators, which many other libraries do not.
+* [zikula](https://github.com/zikula/FileSystem) has abstracted the filesystem and is worth looking at for its coverage of operations.
 
 Architecture
 ------------
