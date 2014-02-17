@@ -46,11 +46,16 @@ behind magic methods (__call(), __toString(), __get() etc).
 
 * [php-resource](https://code.google.com/p/php-resource/) offers a comprehensive OPP wrapper for resources.
 * [shesek](http://www.shesek.info/php/generic-php-object-wrapper-for-resources) offers a simpler OOP wrapper for resources.
+* [Illuminate\Filesystem\Filesystem](http://laravel.com/api/source-class-Illuminate.Filesystem.Filesystem.html#Filesystem) used by Laravel. Not driver-based, so it *only* supports local filesystem operations. However, it is simple to swap it out through its facade, though that is essentially setting a single, global filestore for the whole application.
+* [KnpLabs/Gaufrette](https://github.com/KnpLabs/Gaufrette) takes a similar approach, and has been around for a couple of years.
+* [discordier/php-filesystem](https://github.com/discordier/php-filesystem) tries to get to some raw file access methods, though seems to have stopped development before many adapters were written. Implements filesystem iterators, which many other libraries do not.
+* [zikula](https://github.com/zikula/FileSystem) has abstracted the filesystem and is worth looking at for its coverage of operations.
 
 Architecture
 ------------
 
-Pattern adapter/driver (TBC)
+Uses the [adapter](http://www.fluffycat.com/PHP-Design-Patterns/Adapter/) pattern so that many backend
+storage engines can be pulled in and accessed through a common adapter interface.
 
 The interfaces it implements.
 
@@ -80,6 +85,8 @@ Expansion
 
 * Adding new drivers/storage
 * Interoperability; how does it fit with libraries already out there?
+* Library wrapper for frameworks, e.g. a DiC wrapper package for Laravel so it is quick to use out of the box.
+  No "siloing" though - just an adapter.
 
 Storage that would be interesting
 ---------------------------------
@@ -89,6 +96,7 @@ Storage that would be interesting
 * PDO/MySQL
 * BBC iPlayer
 * Google App Engine (uploaded files, cache files)
+* A test adapter that supports arbitrary data structures and assertions
 
 Reference Tables
 ================
@@ -123,86 +131,100 @@ Nice to see equivalents to all these functions. Also documenting how the syntax 
 between these functions and the equivalent flysystem methods, to make migration plans
 easier to implement.
 
-| Function | Description |
-| -------- | ----------- |
-| basename | Returns trailing name component of path |
-| chgrp | Changes file group |
-| chmod | Changes file mode |
-| chown | Changes file owner |
-| clearstatcache | Clears file status cache |
-| copy | Copies file |
-| delete | See unlink or unset |
-| dirname | Returns parent directory's path |
-| disk_free_space | Returns available space on filesystem or disk partition |
-| disk_total_space | Returns the total size of a filesystem or disk partition |
-| diskfreespace | Alias of disk_free_space |
-| fclose | Closes an open file pointer |
-| feof | Tests for end-of-file on a file pointer |
-| fflush | Flushes the output to a file |
-| fgetc | Gets character from file pointer |
-| fgetcsv | Gets line from file pointer and parse for CSV fields |
-| fgets | Gets line from file pointer |
-| fgetss | Gets line from file pointer and strip HTML tags |
-| file_exists | Checks whether a file or directory exists |
-| file_get_contents | Reads entire file into a string |
-| file_put_contents | Write a string to a file |
-| file | Reads entire file into an array |
-| fileatime | Gets last access time of file |
-| filectime | Gets inode change time of file |
-| filegroup | Gets file group |
-| fileinode | Gets file inode |
-| filemtime | Gets file modification time |
-| fileowner | Gets file owner |
-| fileperms | Gets file permissions |
-| filesize | Gets file size |
-| filetype | Gets file type |
-| flock | Portable advisory file locking |
-| fnmatch | Match filename against a pattern |
-| fopen | Opens file or URL |
-| fpassthru | Output all remaining data on a file pointer |
-| fputcsv | Format line as CSV and write to file pointer |
-| fputs | Alias of fwrite |
-| fread | Binary-safe file read |
-| fscanf | Parses input from a file according to a format |
-| fseek | Seeks on a file pointer |
-| fstat | Gets information about a file using an open file pointer |
-| ftell | Returns the current position of the file read/write pointer |
-| ftruncate | Truncates a file to a given length |
-| fwrite | Binary-safe file write |
-| glob | Find pathnames matching a pattern |
-| is_dir | Tells whether the filename is a directory |
-| is_executable | Tells whether the filename is executable |
-| is_file | Tells whether the filename is a regular file |
-| is_link | Tells whether the filename is a symbolic link |
-| is_readable | Tells whether a file exists and is readable |
-| is_uploaded_file | Tells whether the file was uploaded via HTTP POST |
-| is_writable | Tells whether the filename is writable |
-| is_writeable | Alias of is_writable |
-| lchgrp | Changes group ownership of symlink |
-| lchown | Changes user ownership of symlink |
-| link | Create a hard link |
-| linkinfo | Gets information about a link |
-| lstat | Gives information about a file or symbolic link |
-| mkdir | Makes directory |
-| move_uploaded_file | Moves an uploaded file to a new location |
-| parse_ini_file | Parse a configuration file |
-| parse_ini_string | Parse a configuration string |
-| pathinfo | Returns information about a file path |
-| pclose | Closes process file pointer |
-| popen | Opens process file pointer |
-| readfile | Outputs a file |
-| readlink | Returns the target of a symbolic link |
-| realpath_cache_get | Get realpath cache entries |
-| realpath_cache_size | Get realpath cache size |
-| realpath | Returns canonicalized absolute pathname |
-| rename | Renames a file or directory |
-| rewind | Rewind the position of a file pointer |
-| rmdir | Removes directory |
-| set_file_buffer | Alias of stream_set_write_buffer |
-| stat | Gives information about a file |
-| symlink | Creates a symbolic link |
-| tempnam | Create file with unique file name |
-| tmpfile | Creates a temporary file |
-| touch | Sets access and modification time of file |
-| umask | Changes the current umask |
-| unlink | Deletes a file |
+| Function | Operates on | Description |
+| -------- | ----------- | ----------- |
+| basename |path | Returns trailing name component of path |
+| chgrp | pathname | Changes file group |
+| chmod | pathname | Changes file mode |
+| chown | pathname | Changes file owner |
+| clearstatcache | pathname (optional) | Clears file status cache |
+| copy | pathnames | Copies file |
+| dirname | path | Returns parent directory's path |
+| disk_free_space | directory | Returns available space on filesystem or disk partition |
+| disk_total_space | directory | Returns the total size of a filesystem or disk partition |
+| diskfreespace | directory | Alias of disk_free_space |
+| fclose | resource | Closes an open file pointer |
+| feof | resource | Tests for end-of-file on a file pointer |
+| fflush | resource | Flushes the output to a file |
+| fgetc | resource | Gets character from file pointer |
+| fgetcsv | resource | Gets line from file pointer and parse for CSV fields |
+| fgets | resource | Gets line from file pointer |
+| fgetss | resource | Gets line from file pointer and strip HTML tags |
+| file_exists | pathname | Checks whether a file or directory exists |
+| file_get_contents | pathname | Reads entire file into a string |
+| file_put_contents | pathname | Write a string to a file |
+| file | pathname | Reads entire file into an array |
+| fileatime | pathname | Gets last access time of file |
+| filectime | pathname | Gets inode change time of file |
+| filegroup | pathname | Gets file group |
+| fileinode | pathname | Gets file inode |
+| filemtime | pathname | Gets file modification time |
+| fileowner | pathname | Gets file owner |
+| fileperms | pathname | Gets file permissions |
+| filesize | pathname | Gets file size |
+| filetype | pathname | Gets file type |
+| flock | resource | Portable advisory file locking |
+| fnmatch | pattern | Match filename against a pattern |
+| fopen | pathname | Opens file or URL. Creates a resource. |
+| fpassthru | resource | Output all remaining data on a file pointer |
+| fputcsv | resource | Format line as CSV and write to file pointer |
+| fputs | resource | Alias of fwrite |
+| fread | resource | Binary-safe file read |
+| fscanf | resource | Parses input from a file according to a format |
+| fseek | resource | Seeks on a file pointer |
+| fstat | resource | Gets information about a file using an open file pointer |
+| ftell | resource | Returns the current position of the file read/write pointer |
+| ftruncate | resource | Truncates a file to a given length |
+| fwrite | resource | Binary-safe file write |
+| glob | pattern | Find pathnames matching a pattern |
+| is_dir | pathname | Tells whether the filename is a directory |
+| is_executable | pathname | Tells whether the filename is executable |
+| is_file | pathname | Tells whether the filename is a regular file |
+| is_link | pathname | Tells whether the filename is a symbolic link |
+| is_readable | pathname | Tells whether a file exists and is readable |
+| is_uploaded_file | pathname | Tells whether the file was uploaded via HTTP POST |
+| is_writable | pathname | Tells whether the filename is writable |
+| is_writeable | pathname | Alias of is_writable |
+| lchgrp | pathname | Changes group ownership of symlink |
+| lchown | pathname | Changes user ownership of symlink |
+| link | pathnames | Create a hard link |
+| linkinfo | path | Gets information about a link |
+| lstat | pathnames | Gives information about a file or symbolic link |
+| mkdir | path | Makes directory |
+| move_uploaded_file | filename + pathname | Moves an uploaded file to a new location |
+| parse_ini_file | pathname | Parse a configuration file |
+| pathinfo | path or pathname | Returns information about a file path |
+| pclose | process resource | Closes process file pointer |
+| popen | command string | Opens process file pointer. Returns a resource. |
+| readfile | pathname | Outputs a file |
+| readlink | path | Returns the target of a symbolic link |
+| realpath_cache_get | void | Get realpath cache entries |
+| realpath_cache_size | void | Get realpath cache size |
+| realpath | path | Returns canonicalized absolute pathname |
+| rename | pathnames | Renames a file or directory |
+| rewind | resource | Rewind the position of a file pointer |
+| rmdir | path | Removes directory |
+| set_file_buffer | | Alias of stream_set_write_buffer |
+| stat | pathname | Gives information about a file |
+| symlink | pathnames | Creates a symbolic link |
+| tempnam | path | Create file with unique file name |
+| tmpfile | void | Creates a temporary file. Creates a resource. |
+| touch | pathname | Sets access and modification time of file |
+| umask | string | Changes the current umask |
+| unlink | pathname + optional context resource | Deletes a file |
+
+Each function operates on one of the following as its file:
+
+* pathname - a path and file (absolute or relative file)
+* path - a path only (a directory)
+* filename - a file name with no path
+* resource - a file resource
+
+There is a real good mix of pathnames and resources.
+
+A pathname can be a local path to a file, or could make use of a wrapper. Each wrapper is invoked
+by adding to the path with the scheme:// prefix. Schemss can include 'file', 'ftp', 'php', 'phar',
+and many others. Also custom wrappers can be registered for custom streams. These wrappers can 
+both read and write.
+
+Q: can wrappers be mixed, e.g. rename('ftp://user:pass@example.com/foo.txt', 'zip://archive.zip#bar.txt')?
