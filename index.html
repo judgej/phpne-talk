@@ -84,13 +84,22 @@
 
 					<p>Handling files as single "lumps" of data: strings or arrays.</p>
 
-					<ul class="fragment">
-						<li><code>file_get_contents($filename)</code><br />read a file as a string</li>
-						<li><code>file_put_contents($filename, $string)</code><br />create a file from a string</li>
-						<li><code>copy($source, $destination)</code><br />make a copy of a file</li>
-						<li><code>rename($oldname, $newname)</code><br />move a file</li>
-						<li><code>unlink($filename)</code><br />delete a file</li>
-					</ul>
+						<pre class="fragment"><code class="php">
+// read a file as a string
+file_get_contents($filename)
+
+// create a file from a string
+file_put_contents($filename, $string)
+
+// make a copy of a file
+copy($source, $destination)
+
+// move a file
+rename($oldname, $newname)
+
+// delete a file
+unlink($filename)
+						</code></pre>
 
 					<aside class="notes" data-markdown>
 						* Simple operations on whole files
@@ -104,12 +113,19 @@
 
 					<p>Directories can be created, removed, moved, or scanned for their contents.</p>
 
-					<ul class="fragment">
-						<li><code>mkdir($path)</code><br />create a directory</li>
-						<li><code>rmdir($path)</code><br />delete a directory</li>
-						<li><code>rename($oldname, $newname)</code><br />move a directory</li>
-						<li><code>scandir($path)</code><br />scans a directory for its contents</li>
-					</ul>
+						<pre><code class="php">
+// create a directory
+mkdir($path)
+
+// delete a directory
+rmdir($path)
+
+// move a directory
+rename($oldname, $newname)
+
+// scans a directory for its contents
+scandir($path)
+						</code></pre>
 				</section>
 
 				<section>
@@ -175,14 +191,23 @@
 				<section>
 					<h1>Stream Operations</h1>
 
-					<ul>
-						<li><code>fopen($filename, $mode) </code><br />open a path as a stream</li>
-						<li><code>fputs($handle)</code><br />write a string to a stream</li>
-						<li><code>fread($handle, $length) </code><br />read bytes from a stream</li>
-						<li><code>fseek($handle, offset) </code><br />jump to a location in a stream (moves the file pointer).</li>
-						<li><code>fclose($handle) </code><br />close a stream and destroy the resource</li>
-						<li>Similar for directories:<br /><code>opendir()</code>, <code>readdir()</code>, <code>closedir()</code></li>
-					</ul>
+						<pre><code class="php">
+// open a path as a stream
+fopen($filename, $mode)
+// write a string to a stream
+fputs($handle)
+// read bytes from a stream
+fread($handle, $length)
+// jump to a location in a stream (moves the file pointer)
+fseek($handle, offset)
+// close a stream and destroy the resource
+fclose($handle)
+
+// Similar for directories:
+opendir(); readdir(); closedir();
+
+// and a bunch of stream_*() functions for manipulating streams
+						</code></pre>
 
 					<aside class="notes" data-markdown>
 						* A variable holding a stream resource is referred to as a handle
