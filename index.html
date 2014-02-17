@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>PHP File Abstraction</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<div class="slides">
+
+				<section>
+					<h1>PHP File Abstration</h1>
+					<h2>using the Flysystem library</h2>
+					<p>
+						<small>By <a href="http://github.com/judgej">Jason Judge</a> / <a href="http://twitter.com/JasonDJudge">@JasonDJudge</a></small>
+					</p>
+				</section>
+
+				<section>
+					<h1>Overview</h1>
+
+					<ul>
+						<li><a href="#/traditional-access">Accessing files (traditional PHP)</a></li>
+						<li><a href="#/why-abstract">Why abstract</a></li>
+						<li><a href="#/intro-flysystem">Introducting Flysytem</a></li>
+						<li><a href="#/alternatives">Alternative abstractions</a></li>
+						<li><a href="#/summary">Summary</a></li>
+						<li><a href="#/demo">Demo</a></li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* Some of this will be basic stuff, but hopefuly interesting, and hopefully something new
+					</aside>
+				</section>
+
+				<!--
+				**** Accessing files in PHP ****
+				-->
+
+				<section id="traditional-access">
+					<h1>Accessing files in PHP</h1>
+					<h2>Types of operations</h2>
+					<ul>
+						<li class="fragment">Whole-file operations</li>
+						<li class="fragment">Directory operations</li>
+						<li class="fragment">Streams</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* Simple operations on whole files
+					</aside>
+				</section>
+
+				<section>
+					<h1>Whole File Operations</h1>
+
+					<p>Handling files as single "lumps" of data: strings or arrays.</p>
+
+					<ul class="fragment">
+						<li><code>file_get_contents($filename)</code><br />read a file as a string</li>
+						<li><code>file_put_contents($filename, $string)</code><br />create a file from a string</li>
+						<li><code>copy($source, $destination)</code><br />make a copy of a file</li>
+						<li><code>rename($oldname, $newname)</code><br />move a file</li>
+						<li><code>unlink($filename)</code><br />delete a file</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* Simple operations on whole files
+						* Files accessed by pathnames on the local filesystem (more on this later)
+						* PHP normalises directory separators to / which makes things easier
+					</aside>
+				</section>
+
+				<section>
+					<h1>Directory Operations</h1>
+
+					<p>Directories can be created, removed, moved, or scanned for their contents.</p>
+
+					<ul class="fragment">
+						<li><code>mkdir($path)</code><br />create a directory</li>
+						<li><code>rmdir($path)</code><br />delete a directory</li>
+						<li><code>rename($oldname, $newname)</code><br />move a directory</li>
+						<li><code>scandir($path)</code><br />scans a directory for its contents</li>
+					</ul>
+				</section>
+
+				<section>
+					<h1>Resources</h1>
+
+					<ul>
+						<li class="fragment">A primitive PHP data type</li>
+						<li class="fragment">Resource variables references external resource</li>
+						<li class="fragment">Resource variables created and destroyed by specialised functions</li>
+						<li class="fragment">Resources are not objects</li>
+						<li class="fragment">About 120 resource types</li>
+						<li class="fragment">Well over 1000 functions for handling resources</li>
+						<li class="fragment">One resource type: streams</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* primitive data type like an int or string
+						* around long before PHP was OOP
+						* external resources include: database connections, Flash object, images
+						* an external resource is a 
+						* a dozen or more specialised functions created to handle every single resource type
+					</aside>
+				</section>
+
+				<section>
+					<h1>Streams</h1>
+
+					<p>A stream is a resource type with streamable behaviour:</p>
+
+					<ul>
+						<li class="fragment">Linear sequence of data – a start, middle and end</li>
+						<li class="fragment">No structure inherent in the stream data</li>
+						<li class="fragment">You progress through a stream, with a pointer tracking where you are</li>
+						<li class="fragment">Some streams allow you to <em>rewind</em> or <em>seek</em> to arbitrary points</li>
+						<li class="fragment">A stream may be readable/writable/seekable</li>
+						<li class="fragment">You choose how to open the stream – read/write/both</li>
+						<li class="fragment">A stream maps onto a file, providing access to that file</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* writing can take the form of rewriting from the start, or appending to what may already be there
+						* operations on streams let you read and write characters, lines, strings
+						* a directory can be opened as a stream too, preoviding a list of files and sub-directories
+					</aside>
+				</section>
+
+				<section>
+					<h1>Advantages of Streams</h1>
+
+					<ul>
+						<li class="fragment">Good for memory (with enormous files)</li>
+						<li class="fragment">Rich set of functions (nearly 50)</li>
+						<li class="fragment">Can read enormous directories</li>
+						<li class="fragment">Can append to files</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* No need to keep a whole file in memory - it can be streamed and used a chunk at a time
+						* So far we have talked about static files on the local file system - wrappers allows more
+					</aside>
+				</section>
+
+				<section>
+					<h1>Stream Operations</h1>
+
+					<ul>
+						<li><code>fopen($filename, $mode) </code><br />open a path as a stream</li>
+						<li><code>fputs($handle)</code><br />write a string to a stream</li>
+						<li><code>fread($handle, $length) </code><br />read bytes from a stream</li>
+						<li><code>fseek($handle, offset) </code><br />jump to a location in a stream (moves the file pointer).</li>
+						<li><code>fclose($handle) </code><br />close a stream and destroy the resource</li>
+						<li>Similar for directories:<br /><code>opendir()</code>, <code>readdir()</code>, <code>closedir()</code></li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* A variable holding a stream resource is referred to as a handle
+						* There are around 50 functions for operating on streams; this is just a handful
+					</aside>
+				</section>
+
+
+				<section>
+					<h1>Stream Wrappers (1)</h1>
+
+					<h2>aka Protocol Handlers</h2>
+
+					<ul>
+						<li class="fragment">Every stream is handled by a wrapper</li>
+						<li class="fragment">
+							The wrapper is specified at the start of the path as a scheme:<br />
+							<code>scheme://target</code>
+						</li>
+						<li class="fragment">Schemes include: file, ftp, http, php, phar, and more</li>
+						<li class="fragment">Default scheme is <code>file://</code></li>
+						<li class="fragment"><code>php://</code> wrapper gives access to stdin, stdout, memory</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* A wrapper handles the functionality; the means to access the stream
+						* The target is a directory, but may also include login details and other information requried to connect
+						* Explain stdin, stdout, stderr
+						* Access to memory is like writing a temporary file, but it can reside in memory (though can overflow to disk)
+						* Memory temporary files have no filename
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h1>Stream Wrappers (2)</h1>
+
+						<ul>
+							<li class="fragment">
+								All wrappers can be used in whole-file operations we looked at earlier<br />
+								<code>readfile('http://phpne.org.uk/about')</code>
+							</li>
+							<li class="fragment">Custom wrappers can be created</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* Whole-file operations are just wrappers for collections of stream operations
+							* A custom wrapper can be very powerful
+							* A custom wrapper will contain an entire protocol for an abstration to access remote resources
+						</aside>
+					</section>
+
+					<section>
+						<h1>Custom Stream Wrappers</h1>
+
+						<h2>Register Your Stream Wrapper</h2>
+
+						<pre><code class="php">
+// Register the class
+stream_wrapper_register('mywrapper', 'MyStreamProtocol');
+
+// Use the wrapper
+$fp = fopen('mywrapper://some/path/to/a/data/source', 'r');
+readfile(fp);
+fclose($fp);
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* The stream wrapper can be namespaced
+							* Not sure if autoloaded, but I assume so
+							* Examples are Google cloud storage, where the "google" wrapper is created
+						</aside>
+					</section>
+
+					<section>
+						<h1>Custom Stream Wrappers</h1>
+
+						<h2>Define Your Stream Wrapper (1)</h2>
+
+						<pre><code class="php">
+class MyStreamProtocol {
+    // Open a stream
+    function stream_open($path, $mode, $options, &$opened_path) {...};
+
+    function stream_close() {...};
+    function stream_read() {...};
+    function stream_write() {...};
+    function stream_eof() {...};
+    function stream_tell() {...};
+    function stream_seek() {...};
+    ...
+}
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* When opening a stream, the path will be a URL, so use parse_url() to parse it.
+							* See http://www.master.iag.usp.br/manuais/php/br/function.stream-wrapper-register.html
+							* Documentation here: http://uk3.php.net/manual/en/class.streamwrapper.php
+						</aside>
+					</section>
+
+					<section>
+						<h1>Custom Stream Wrappers</h1>
+
+						<h2>Define Your Stream Wrapper (2)</h2>
+
+						<pre><code class="php">
+class MyStreamProtocol {
+    ...
+    // File-based operations for use with touch(), unlink(), rename(), stat()
+    function unlink() {...};
+    function rename() {...};
+    function rmdir() {...};
+    function url_stat() {...};
+    ...
+}
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* There is no interface for the wrapper class.
+							* That is because most of the methods are optional: implement what is relevant.
+						</aside>
+					</section>
+
+					<section>
+						<h1>Custom Stream Wrappers</h1>
+
+						<h2>Define Your Stream Wrapper (3)</h2>
+
+						<pre><code class="php">
+class MyStreamProtocol {
+    ...
+    // Directory-based operations for use with mkdir(), rmdir(), opendir()
+    function mkdir() {...};
+    function rmdir() {...};
+    function dir_opendir() {...};
+    function dir_readdir() {...};
+    function dir_closedir() {...};
+}
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* Interesting example: http://www.tuxradar.com/practicalphp/15/11/1
+							* The example lets you write text to the stream (stored in a variable, so a memory-based stream)
+							* then when you read the stream the text is converted to morese code.
+							* However, a filter may be a better way to handle that.
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<h1>Stream Filters and Options</h1>
+
+					<ul>
+						<li class="fragment">Filters can be added to streams</li>
+						<li class="fragment">Custom filters can be created</li>
+						<li class="fragment">Options can be passed to wrappers</li>
+						<li class="fragment">Options are specific to each wrapper</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* Filters can be chained together
+						* Different filters can be added for input and output
+						* A filter allows the stream to be transformed without having to deal with it in your application
+						* e.g. a filter can perform compression, or decompression or encryption as data passes through it
+						* or even convert to and from Morse Code.
+						* Example options: tell a http stream whether to use POST or GET
+						* Example options: tell an ftp stream whether to overwrite existing files or not
+					</aside>
+				</section>
+
+				<!--
+				**** Why Abstract? ****
+				-->
+
+				<section id="why-abstract">
+					<h1>Why Abstract?</h1>
+
+					<p>Since the stream wrappers already seem to abstract everything, why abstract more?</p>
+
+					<ul>
+						<li class="fragment">One interface for handling files <em>anywhere</em></li>
+						<li class="fragment">Remote storage complexities hidden from the application logic; loose coupling</li>
+						<li class="fragment">Swapping storage should be simple and quick; less lock-in</li>
+						<li class="fragment">Testing - emulate a filesystem easily</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* This is all nice, so why would you want to abstract it further?
+						* The complexity is still there, but it is hidden inside an abstraction, away from the application
+						* Some servers do not allow local files to be written, and you want to migrate an application to it quickly
+						* When testing, by emulated a filesystem, you have full control of how that filesystem behaves
+					</aside>
+				</section>
+
+				<!--
+				**** Introducing Flysytem ****
+				-->
+
+				<section id="intro-flysystem">
+					<h1>Introducing Flysytem</h1>
+
+					<ul>
+						<li class="fragment">Composer/packagist installation</li>
+						<li class="fragment">Extendable using the adapter pattern</li>
+						<li class="fragment">Works on PHP5.3, tested to PHP5.6</li>
+						<li class="fragment">Supports streaming and whole files</li>
+						<li class="fragment">Caching built-in (DI)</li>
+						<li class="fragment">Copy files across different filesystems</li>
+					</ul>
+
+					<aside class="notes" data-markdown>
+						* The adapter pattern uses an internal interface, and adapters to convert that to external interfaces
+						* The cache uses Dependancy Injection, so you can choose different caching options
+						* Copying files between filesystems is about putting two streams back-to-back
+					</aside>
+				</section>
+
+				<section>
+					<h1>Installing</h1>
+
+					<h2>composer install</h2>
+
+					<pre><code class="json" data-trim>
+{
+    "require": {
+        "league/flysystem": "0.2.*"
+    }
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h1>What is Flysystem</h1>
+
+					<blockquote>
+						"Flysystem is a filesystem abstraction which allows you to easily swap out a local filesystem for a remote one."
+					</blockquote>
+
+					<aside class="notes" data-markdown>
+						* It is an object, unlike all of PHP's built-in file and stream handling.
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h1>Local Files</h1>
+
+						<p>To access the local filesystem:</p>
+
+						<pre><code class="php" data-trim>
+use League\Flysystem\Filesystem;
+use League\Flysystem\Adapter\Local as Adapter;
+
+$filesystem = new Filesystem(new Adapter(’path/to/root’));
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* The filesystem object provides access to files through the adapter
+							* The local file adapter needs a root directory to build any further directories on
+						</aside>
+					</section>
+
+					<section>
+						<h1>FTP</h1>
+
+						<p>Other adapters can be dropped into the constructor:</p>
+
+						<pre><code class="php" data-trim>
+use League\Flysystem\Filesystem;
+use League\Flysystem\Adapter\Ftp as Adapter;
+
+$filesystem = new Filesystem(new Adapter(array(
+    'host' => 'ftp.example.com',
+    'username' => 'username',
+    'password' => 'password',
+)));
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* The FTP adapter uses the standard PHP FTP functions to perform its tasks
+						</aside>
+					</section>
+
+					<section>
+						<h1>Dropbox</h1>
+
+						<p>Some adapters need external libraries to be included:</p>
+
+						<pre><code class="php" data-trim>
+use Dropbox\Client;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Adapter\Dropbox as Adapter;
+
+$client = new Client($token, $appName);
+$filesystem = new Filesystem(new Adapter($client, 'optional/path/prefix'));
+						</code></pre>
+
+						<p>The Dropbox library in turn needs OAuth and its libraries.</p>
+						<p>It is all nicely <span title="Dependency Injection">handled by DI</span>.</p>
+
+						<aside class="notes" data-markdown>
+							* The DI can be handled manually in small projects, or a container used to ease use in frameworks.
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h1>Operations (1)</h1>
+
+						<p>Writing complete files:</p>
+
+						<pre><code class="php" data-trim>
+$fs = new Filesystem($adapter);
+						</code></pre>
+
+						<pre><code class="php" data-trim>
+// Create a new file (including directories) and set permissions
+$fs->write($filename, $content)
+
+// Overwrite the contents of an existing file
+$fs->update($filename, $content)
+
+// Write or put, depending if file exists
+$fs->put($filename, $content)
+
+// Apend to a file?
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* Non-streaming - whole files are written from a string
+							* write will raise an exception if the file alreadt exists
+							* update will raise an exception if teh file does not exist
+							* probably safer to use put() if you are unsure
+							* Does not appear to be a way to append at this time
+						</aside>
+					</section>
+
+					<section>
+						<h1>Operations (2)</h1>
+
+						<p>Reading complete files:</p>
+
+						<pre><code class="php" data-trim>
+$fs = new Filesystem($adapter);
+						</code></pre>
+
+						<pre><code class="php" data-trim>
+// Read the complete contents of a file as a string
+$fs->read($filename)
+
+// Tells us if the file exists
+$fs->has($filename)
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* 
+						</aside>
+					</section>
+
+					<section>
+						<h1>Operations (3)</h1>
+
+						<p>File operations:</p>
+
+						<pre><code class="php" data-trim>
+$fs = new Filesystem($adapter);
+						</code></pre>
+
+						<pre><code class="php" data-trim>
+// Delete a file
+$fs->delete($filename)
+
+// Rename or move a file
+$fs->rename($filename)
+
+// Copy a file?
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* There is not operation to copy or duplicate a file, but there is an elegant way detailed later
+						</aside>
+					</section>
+
+					<section>
+						<h1>Operations (4)</h1>
+
+						<p>Directory operations:</p>
+
+						<pre><code class="php" data-trim>
+$fs = new Filesystem($adapter);
+						</code></pre>
+
+						<pre><code class="php" data-trim>
+// Create a directory (to any number of levels)
+$fs->createDir($path)
+
+// Remove a directory
+$fs->deleteDir($path)
+
+// Move a directory? Same as renaming a file
+$fs->rename($path)
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* Not all adapters support moving of directories, so be careful and test that
+						</aside>
+					</section>
+				</section>
+
+
+				<section>
+					<h1>Metadata</h1>
+
+					<p>Minimum supported metadata for all adapters:</p>
+
+					<pre><code class="php" data-trim>
+$fs = new Filesystem($adapter);
+					</code></pre>
+
+					<pre><code class="php" data-trim>
+// Get the Mimetype for a file
+$fs->getMimetype($filename)
+
+// Get the last update time for a file
+$fs->getTimestamp($filename)
+
+// Get the size of a file in bytes
+$fs->getSize($filename)
+					</code></pre>
+
+					<aside class="notes" data-markdown>
+						* All metadata is cached, so we don't have round-trips to the remote store each time
+						* The adapter may return any number of additional metadata items (as we will see in the demo)
+						* Fetching specific additional metadata fields will mean writing a plugin (not sure why though)
+					</aside>
+				</section>
+
+
+				<section>
+					<section>
+						<h1>File Visibility (1)</h1>
+
+						<p>The visibility of a file: can it be seen by others or just the current user?</p>
+
+						<pre><code class="php" data-trim>
+// Two states allowed
+AdapterInterface::VISIBILITY_PRIVATE // 'private'
+AdapterInterface::VISIBILITY_PUBLIC  // 'public'
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* The visibility is very high level - may not be enough for some use-cases
+						</aside>
+					</section>
+
+					<section>
+						<h1>File Visibility (2)</h1>
+
+						<p>The visibility can be:</p>
+
+						<ul>
+							<li>set globally, for all new files to take on</li>
+							<li>set for each file creating operation (write)</li>
+							<li>applied to existing files</li>
+						</ul>
+
+						<pre><code class="php" data-trim>
+// New files
+$fs->write($filename, 'contents', ['visibility' => $visibility]
+
+// Existing files
+$fs->getVisibility($filename)
+$fs->setVisibility($filename, $visibility)
+
+// Or set globally when instantiating the Filesystem
+$fs = new League\Flysystem\Filesystem($adapter, $cache, [
+    'visibility' => AdapterInterface::VISIBILITY_PRIVATE
+]);
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* It would be nice to see some use-cases on how the visibility choices arose.
+							* Would also be nice to be able to extend the visibility to cater for other needs.
+						</aside>
+					</section>
+
+					<section>
+						<h1>File Visibility (3)</h1>
+
+						<p>Implementation example, for local files</p>
+
+						<ul>
+							<li>public: 0644 (owner=rw, group=r, other=r)</li>
+							<li>private: 0600 (owner=rw)</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* Other adapters will use other methods
+							* The broad-brush approach is probably just what is common between the adapters
+						</aside>
+					</section>
+				</section>
+
+
+				<section>
+					<section>
+						<h1>Listing directories (1)</h1>
+
+						<pre><code class="php" data-trim>
+// List the contents of a directory, recursively if required
+$fs->listContents($path [, bool $recurse])
+						</code></pre>
+
+						<ul>
+							<li class="fragment">Returns an array of arrays</li>
+							<li class="fragment">Each item is a "file" or a "dir"</li>
+							<li class="fragment">A basename (e.g. myfile.txt) and a path for each item</li>
+							<li class="fragment">Any other metadata requested and cached for this item</li>
+							<li class="fragment">Any metadata the adapter wants to return</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* An array of arrays is items and attributes of each
+							* Would probably be more useful to return objects
+							* The path for each item is the full path to an item, which includes filenames (probably a misnomer)
+						</aside>
+					</section>
+
+					<section>
+						<h1>Listing directories (2)</h1>
+
+						<ul>
+							<li class="fragment">Custom metadata is very useful</li>
+							<li class="fragment">
+								<code>$fs->listPaths($path [, bool $recurse])</code><br />
+								Return just a list of paths
+							</li>
+							<li class="fragment">
+								<code>$fs->listWith($keys, $path [, bool $recurse])</code><br />
+								Make sure metadata is requested (fields listed in $keys)
+							</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* Custom metadata: e.g. owner, group and full file permissions, public URLs (for Flickr pics)
+							* Some metadata comes for free when listing a directory, and will always be included by the adapter
+							* Some metadata needs an additional call to the remote site, and so won't be fetched unless asked for
+						</aside>
+					</section>
+				</section>
+
+
+				<section>
+					<section>
+						<h1>Flysystem and Streams (1)</h1>
+
+						<p>Use streams instead of strings to read and write files</p>
+
+						<pre><code class="php" data-trim>
+// Create a file from a stream
+$fs->writeStream($filename, $stream)
+
+// Update a file from a stream
+$fs->updateStream($filename, $stream)
+
+// Return a file as a stream
+resource $fs->readStream($filename)
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* If the remote storage does not support direct streams, then Flysystem will read a whole remote file into a temporary stream and return that
+						</aside>
+					</section>
+
+					<section>
+						<h1>Flysystem and Streams (2)</h1>
+
+						<p>There is no copy operation in Flysystem; few if any remote storages support it.</p>
+
+						<p>Instead, put two streams back-to-back:</p>
+
+						<pre><code class="php" data-trim>
+// Copy one file to a new file
+$fs->writeStream(
+    'destination.txt',
+    $fs->readStream('source.txt')
+);
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* This will still stream the source file to the local server, then back out to the remote server.
+							* The files could be copied between two separate filesystems this way
+						</aside>
+					</section>
+
+					<section>
+						<h1>Flysystem and Streams (3)</h1>
+
+						<p>So far no support for returning a stream to an open file for writing.</p>
+
+						<p>Some remote storage would support this, and some would not.</p>
+
+						<pre><code class="php" data-trim>
+// This would be useful (but not implemented):
+$stream = $fs->openWriteStream('destination.txt', 'a');
+
+fputs($stream, 'foo');
+
+fclose($stream);
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* This will still stream the source file to the local server, then back out to the remote server.
+							* The files could be copied between two separate filesystems this way
+						</aside>
+					</section>
+				</section>
+
+
+				<!--
+				**** Alternative abstractions ****
+				-->
+
+				<section>
+					<section id="alternatives">
+						<h1>Alternative Abstractions (1)</h1>
+
+						<ul>
+							<li>
+								<a href="">php-resource</a> offers a comprehensive OPP wrapper for resources.
+							</li>
+							<li>
+								<a href="">shesek</a> offers a simpler OOP wrapper for resources.
+							</li>
+							<li>
+								<a href="">Illuminate\Filesystem\Filesystem</a> used by Laravel. Not driver-based, so it only supports local filesystem operations. However, it is simple to swap it out through its facade, though that is essentially setting a single, global filestore for the whole application.
+							</li>
+						</ul>
+					</section>
+
+					<section>
+						<h1>Alternative Abstractions (2)</h1>
+
+						<ul>
+							<li>
+								<a href="">KnpLabs/Gaufrette</a> takes a similar approach, and has been around for a couple of years.
+							</li>
+							<li>
+								<a href="">discordier/php-filesystem</a> tries to get to some raw file access methods, though seems to have stopped development before many adapters were written. Implements filesystem iterators, which many other libraries do not.
+							</li>
+							<li>
+								<a href="">zikula</a> has abstracted the filesystem and is worth looking at for its coverage of operations.
+							</li>
+						</ul>
+					</section>
+				</section>
+
+
+				<section>
+					<section>
+						<h1>Enhancements - Adapters</h1>
+
+						<p>Some interesting adapters</p>
+
+						<ul>
+							<li>BBC iPlayer</li>
+							<li>Flickr (finish off)</li>
+							<li>PDO/MySQL</li>
+							<li>IMAP</li>
+							<li>Google Cloud Storage</li>
+							<li>Test adapter skeleton</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* The test adapter could be set with rules on how to respond to requests
+							* iPlayer includes channels, categories, thumbnails, link to view page
+							* IMAP - emails are just text files anyway; the adapter could also pull attachments out into virtual folders
+						</aside>
+					</section>
+
+					<section>
+						<h1>Enhancements - Features</h1>
+
+						<ul>
+							<li class="fragment">Support for paged files (using streams)</li>
+							<li class="fragment">Writeable streams</li>
+							<li class="fragment">Directory listings (and files) as objects</li>
+							<li class="fragment">Directory listings as streams</li>
+							<li class="fragment">find() operation</li>
+							<li class="fragment">Extend permissions</li>
+							<li class="fragment">copy() operation</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* Paged files would include data that can only be retrived in pages, e.g. entries in a blog
+							* Writeable streams would be supported by only some adapters and storage destinations
+							* Directories as objects offer better handling of missing metadata
+							* find() could search for matching files using any criteria - file globbing, metadata match.
+							* The permissions needs more use-cases, so this is just a hunch at this stage.
+							* One permissions case: read-only files, generated virtually by the adapter
+							* The copy() operation could make use of the ability for a remote storage to duplicate files where it can, otherwise would just stream back-to-back.
+						</aside>
+					</section>
+				</section>
+
+				<!--
+				**** Summary ****
+				-->
+
+				<section id="summary">
+					<h1>Summary</h1>
+
+					<ul>
+						<li>PHP file handling is flexible and powerful</li>
+						<li>PHP provides some abstraction already</li>
+						<li>We like to abstract files, directories and streams</li>
+						<li>Flysystem brings file abstraction into the OOP world</li>
+						<li>Flysystem makes it easier to swap remote storage in and out</li>
+						<li>Flysystem is still young, and will develop further</li>
+					</ul>
+				</section>
+
+
+				<!--
+				**** Demo ****
+				-->
+
+				<section>
+					<section id="demo">
+						<h1>Demo (1)</h1>
+
+						<ul>
+							<li>An adapter to access some of Flickr as an abstract filesystem</li>
+							<li>Uses OAuth to log into Flickr then connects with the token</li>
+							<li>Directory structure is artificial, as are the files</li>
+							<li>Metadata includes various Flickr properties of the images</li>
+							<li>Demo does not write images at this time, but it would be simple</li>
+						</ul>
+					</section>
+
+					<section id="demo">
+						<h1>Demo (2)</h1>
+
+						<p>Each screen fetches the contents of the path</p>
+						<pre><code class="php" data-trim>
+// $app['flickrapi'] is a DI container for the Flickr API
+// FlyAdapter is a custom adapter that adstracts Flickr
+$filesystem = new Filesystem(
+    new Academe\Flickr\FlyAdapter($app['flickrapi'])
+);
+
+// Get the path and find out what is in it.
+// Directories displayed on column 1, files on column 2
+$path = $request->get('path', '');
+$items = $filesystem->listContents($flickr_path);
+						</code></pre>
+					</section>
+
+					<section id="demo">
+						<h1>Demo (3)</h1>
+
+						<p>If a file is selected, then fetch it for display</p>
+						<pre><code class="php" data-trim>
+$file = $request->get('file', '');
+if (!empty($selected_file)) {
+    $file_metadata = $filesystem->getWithMetadata("$path/$file", array());
+    $file_content = $filesystem->read("$path/$file", array());
+    // The file_content can be streamed, or displayed inline
+    // depending on its mimetype
+}
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* The point if this is to show how simple the code for the application is - it knows nothing about where the files come from.
+						</aside>
+					</section>
+
+					<section id="demo">
+						<h1>Demo (4)</h1>
+
+						<p>The virtual directory structure:</p>
+
+						<pre><code class="php" data-trim>
+/
+|--contacts
+|  |--friends
+|  |--family
+|  |--both
+|  |--neither
+|     |--metadata.csv
+|     |--user1
+|     |--user2
+|        |--photostream
+|           |--image1_small.jpg
+|           |--image1_largesquare.jpg
+|           |--image2_small.jpg
+|           |--image2_largesquare.jpg
+|           |--...
+|        |--sets
+|        |--non-sets
+|     |--userX
+|--me
+						</code></pre>
+
+						<p>
+							<a href="http://www.acadweb.co.uk/flysystem/browse" target="_blank">Link to the demo</a>
+							(will need a Yahoo/Flickr login)
+						</p>
+
+						<aside class="notes" data-markdown>
+							* Note metadata.csv - it summarises the files in the directory as a CSV file
+							* Any number of additional sizes could be included.
+						</aside>
+					</section>
+				</section>
+
+
+				<section>
+					<h1>THE END</h1>
+
+					<p>I hope you found this useful.</p>
+
+					<p>Slides will be online, and updated as necessary.</p>
+
+					<p>
+						Feedback:<br />
+						<a href="http://twitter.com/JasonDJudge">@JasonDJudge</a><br />
+						<a href="mailto:jason@academe.co.uk">jason@academe.co.uk</a>
+					</p>
+				</section>
+
+				<section id="references">
+					<h1>References</h1>
+
+					<ul>
+						<li><a href="https://github.com/thephpleague/flysystem">League\Flysystem</a></li>
+						<li><a href="http://php.net/manual/en/class.streamwrapper.php">Stream wrapper prototype class (PHP)</a></li>
+						<li><a href="http://www.php.net/manual/en/book.stream.php">Streams manual (php)</a></li>
+						<li><a href="http://www.flickr.com/services/api/">Flickr API</a></li>
+						<li><a href="https://github.com/academe/flickr">Flickr API library with FlyAdapter</a></li>
+						<li><a href=""></a></li>
+						<li><a href=""></a></li>
+					</ul>
+				</section>
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
