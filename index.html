@@ -84,13 +84,22 @@
 
 					<p>Handling files as single "lumps" of data: strings or arrays.</p>
 
-					<ul class="fragment">
-						<li><code>file_get_contents($filename)</code><br />read a file as a string</li>
-						<li><code>file_put_contents($filename, $string)</code><br />create a file from a string</li>
-						<li><code>copy($source, $destination)</code><br />make a copy of a file</li>
-						<li><code>rename($oldname, $newname)</code><br />move a file</li>
-						<li><code>unlink($filename)</code><br />delete a file</li>
-					</ul>
+						<pre class="fragment"><code class="php">
+// read a file as a string
+$string = file_get_contents($filename)
+
+// create a file from a string
+file_put_contents($filename, $string)
+
+// make a copy of a file
+copy($source, $destination)
+
+// move a file
+rename($oldname, $newname)
+
+// delete a file
+unlink($filename)
+						</code></pre>
 
 					<aside class="notes" data-markdown>
 						* Simple operations on whole files
@@ -104,12 +113,19 @@
 
 					<p>Directories can be created, removed, moved, or scanned for their contents.</p>
 
-					<ul class="fragment">
-						<li><code>mkdir($path)</code><br />create a directory</li>
-						<li><code>rmdir($path)</code><br />delete a directory</li>
-						<li><code>rename($oldname, $newname)</code><br />move a directory</li>
-						<li><code>scandir($path)</code><br />scans a directory for its contents</li>
-					</ul>
+						<pre><code class="php">
+// create a directory
+mkdir($path)
+
+// delete a directory
+rmdir($path)
+
+// move a directory
+rename($oldname, $newname)
+
+// scans a directory for its contents
+scandir($path)
+						</code></pre>
 				</section>
 
 				<section>
@@ -152,7 +168,7 @@
 					<aside class="notes" data-markdown>
 						* writing can take the form of rewriting from the start, or appending to what may already be there
 						* operations on streams let you read and write characters, lines, strings
-						* a directory can be opened as a stream too, preoviding a list of files and sub-directories
+						* a directory can be opened as a stream too, providing a list of files and sub-directories
 					</aside>
 				</section>
 
@@ -175,14 +191,23 @@
 				<section>
 					<h1>Stream Operations</h1>
 
-					<ul>
-						<li><code>fopen($filename, $mode) </code><br />open a path as a stream</li>
-						<li><code>fputs($handle)</code><br />write a string to a stream</li>
-						<li><code>fread($handle, $length) </code><br />read bytes from a stream</li>
-						<li><code>fseek($handle, offset) </code><br />jump to a location in a stream (moves the file pointer).</li>
-						<li><code>fclose($handle) </code><br />close a stream and destroy the resource</li>
-						<li>Similar for directories:<br /><code>opendir()</code>, <code>readdir()</code>, <code>closedir()</code></li>
-					</ul>
+						<pre><code class="php">
+// open a path as a stream
+fopen($filename, $mode)
+// write a string to a stream
+fputs($handle)
+// read bytes from a stream
+fread($handle, $length)
+// jump to a location in a stream (moves the file pointer)
+fseek($handle, offset)
+// close a stream and destroy the resource
+fclose($handle)
+
+// Similar for directories:
+opendir(); readdir(); closedir();
+
+// and a bunch of stream_*() functions for manipulating streams
+						</code></pre>
 
 					<aside class="notes" data-markdown>
 						* A variable holding a stream resource is referred to as a handle
@@ -339,7 +364,7 @@ class MyStreamProtocol {
 					<ul>
 						<li class="fragment">Filters can be added to streams</li>
 						<li class="fragment">Custom filters can be created</li>
-						<li class="fragment">Options can be passed to wrappers</li>
+						<li class="fragment">Options can be passed to wrappers (called "contexts")</li>
 						<li class="fragment">Options are specific to each wrapper</li>
 					</ul>
 
@@ -457,10 +482,17 @@ class MyStreamProtocol {
 						<p>To access the local filesystem:</p>
 
 						<pre><code class="php" data-trim>
+// The filesystem class and the adapter.
 use League\Flysystem\Filesystem;
 use League\Flysystem\Adapter\Local as Adapter;
 
-$filesystem = new Filesystem(new Adapter(’path/to/root’));
+// Create a local file filesystem object.
+$filesystem = new Filesystem(new Adapter('path/to/root'));
+						</code></pre>
+
+						<pre class="fragment"><code class="php" data-trim>
+// Get the content of a file.
+$file_content = $filesystem->read('sub_dir/myfile.txt');
 						</code></pre>
 
 						<aside class="notes" data-markdown>
@@ -844,9 +876,13 @@ fclose($stream);
 								<a href="">shesek</a> offers a simpler OOP wrapper for resources.
 							</li>
 							<li>
-								<a href="">Illuminate\Filesystem\Filesystem</a> used by Laravel. Not driver-based, so it only supports local filesystem operations. However, it is simple to swap it out through its facade, though that is essentially setting a single, global filestore for the whole application.
+								<a href="">Illuminate\Filesystem\Filesystem</a> used by Laravel. Not adapter-based, so it only supports local filesystem operations.
 							</li>
 						</ul>
+
+						<aside class="notes" data-markdown>
+							* For Laravel, it is simple to swap it out through its facade, though that is essentially setting a single, global filestore for the whole application.
+						</aside>
 					</section>
 
 					<section>
@@ -942,8 +978,8 @@ fclose($stream);
 
 						<ul>
 							<li>An adapter to access some of Flickr as an abstract filesystem</li>
-							<li>Uses OAuth to log into Flickr then connects with the token</li>
-							<li>Directory structure is artificial, as are the files</li>
+							<li>Uses OAuth to log into Flickr</li>
+							<li>Directory structure is emulated, as are the files</li>
 							<li>Metadata includes various Flickr properties of the images</li>
 							<li>Demo does not write images at this time, but it would be simple</li>
 						</ul>
@@ -952,7 +988,16 @@ fclose($stream);
 					<section id="demo">
 						<h1>Demo (2)</h1>
 
-						<p>Each screen fetches the contents of the path</p>
+						<h2>The demo architecture</h2>
+
+						<p><img src="img/demo-architecture.png" /></p>
+
+					</section>
+
+					<section id="demo">
+						<h1>Demo (3)</h1>
+
+						<p>Each screen fetches the contents given the path</p>
 						<pre><code class="php" data-trim>
 // $app['flickrapi'] is a DI container for the Flickr API
 // FlyAdapter is a custom adapter that adstracts Flickr
@@ -968,14 +1013,18 @@ $items = $filesystem->listContents($flickr_path);
 					</section>
 
 					<section id="demo">
-						<h1>Demo (3)</h1>
+						<h1>Demo (4)</h1>
 
 						<p>If a file is selected, then fetch it for display</p>
 						<pre><code class="php" data-trim>
 $file = $request->get('file', '');
 if (!empty($selected_file)) {
+    // Get metadata for the file.
     $file_metadata = $filesystem->getWithMetadata("$path/$file", array());
+
+    // Get the content of the file.
     $file_content = $filesystem->read("$path/$file", array());
+
     // The file_content can be streamed, or displayed inline
     // depending on its mimetype
 }
@@ -987,7 +1036,7 @@ if (!empty($selected_file)) {
 					</section>
 
 					<section id="demo">
-						<h1>Demo (4)</h1>
+						<h1>Demo (5)</h1>
 
 						<p>The virtual directory structure:</p>
 
@@ -1036,7 +1085,8 @@ if (!empty($selected_file)) {
 					<p>
 						Feedback:<br />
 						<a href="http://twitter.com/JasonDJudge">@JasonDJudge</a><br />
-						<a href="mailto:jason@academe.co.uk">jason@academe.co.uk</a>
+						<a href="mailto:jason@academe.co.uk">jason@academe.co.uk</a><br />
+						<a href="https://github.com/judgej/phpne-talk">github.com/judgej/phpne-talk</a>
 					</p>
 				</section>
 
@@ -1049,8 +1099,6 @@ if (!empty($selected_file)) {
 						<li><a href="http://www.php.net/manual/en/book.stream.php">Streams manual (php)</a></li>
 						<li><a href="http://www.flickr.com/services/api/">Flickr API</a></li>
 						<li><a href="https://github.com/academe/flickr">Flickr API library with FlyAdapter</a></li>
-						<li><a href=""></a></li>
-						<li><a href=""></a></li>
 					</ul>
 				</section>
 			</div>
