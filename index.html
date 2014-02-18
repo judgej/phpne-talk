@@ -968,17 +968,33 @@ fclose($stream);
 				**** Summary ****
 				-->
 
-				<section id="summary">
-					<h1>Summary</h1>
+				<section>
+					<section id="summary">
+						<h1>Summary</h1>
 
-					<ul>
-						<li>PHP file handling is flexible and powerful</li>
-						<li>PHP provides some abstraction already</li>
-						<li>We like to abstract files, directories and streams</li>
-						<li>Flysystem brings file abstraction into the OOP world</li>
-						<li>Flysystem makes it easier to swap remote storage in and out</li>
-						<li>Flysystem is still young, and will develop further</li>
-					</ul>
+						<ul>
+							<li>PHP file handling is flexible and powerful</li>
+							<li>PHP provides some abstraction already</li>
+							<li>We like to abstract files, directories and streams</li>
+							<li>Flysystem brings file abstraction into the OOP world</li>
+							<li>Flysystem makes it easier to swap remote storage in and out</li>
+							<li>Flysystem is still young, and will develop further</li>
+						</ul>
+					</section>
+
+					<section id="conclusions">
+						<h1>Conclusions</h1>
+
+						<ul>
+							<li class="fragment">We can no longer assume files will just be written to the local filesystem</li>
+							<li class="fragment">An OO wrapper for file access will makes switching storage destinations easier</li>
+							<li class="fragment">An agreed interface would be good for portability (PSR?)</li>
+							<li class="fragment">Streams and stream wrappers are underused and underappreciated</li>
+							<li class="fragment">Streams are still a core part of file handling, and will be for a long time</li>
+							<li class="fragment">Flysystem is gaining momentum and is worth checking out...</li>
+							<li class="fragment">...but be aware it is still finding its feet</li>
+						</ul>
+					</section>
 				</section>
 
 
@@ -1011,7 +1027,7 @@ fclose($stream);
 					<section id="demo">
 						<h1>Demo (3)</h1>
 
-						<p>Each screen fetches the contents given the path</p>
+						<p>The demo fetches the contents of a "path" on Flickr</p>
 						<pre><code class="php" data-trim>
 // $app['flickrapi'] is a DI container for the Flickr API
 // FlyAdapter is a custom adapter that adstracts Flickr
@@ -1019,9 +1035,10 @@ $filesystem = new Filesystem(
     new Academe\Flickr\FlyAdapter($app['flickrapi'])
 );
 
-// Get the path and find out what is in it.
-// Directories displayed on column 1, files on column 2
+// Get the path from the user.
 $path = $request->get('path', '');
+
+// Get the items on Flickr at that path
 $items = $filesystem->listContents($flickr_path);
 						</code></pre>
 					</section>
@@ -1029,9 +1046,11 @@ $items = $filesystem->listContents($flickr_path);
 					<section id="demo">
 						<h1>Demo (4)</h1>
 
-						<p>If a file is selected, then fetch it for display</p>
+						<p>If a file is selected, then fetch it for display or download</p>
 						<pre><code class="php" data-trim>
+// Filename selected by user
 $file = $request->get('file', '');
+
 if (!empty($selected_file)) {
     // Get metadata for the file.
     $file_metadata = $filesystem->getWithMetadata("$path/$file", array());
